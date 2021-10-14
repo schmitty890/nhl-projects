@@ -5,8 +5,74 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>nhl project</title>
+  <style>
+    #teams {
+      border: 1px solid;
+      list-style-type: none;
+      padding: 0;
+    }
+    #teams li {
+      padding: 5px;
+    }
+
+    #teams li:nth-child(odd) {
+      background-color: #ececec;
+    }
+
+    .version {
+      font-size: 10px;
+      float: right;
+    }
+  </style>
 </head>
 <body>
-  <h1>nhl project vanilla v1</h1>
+  <div class="version">nhl project vanilla v1</div>
+  <h1>The teams of the National Hockey League</h1>
+  <section>
+    <h2>Teams</h2>
+    <ul id="teams"></ul>
+  </section>
+  <script>
+    var loadTeams = function () {
+      var xhr = new XMLHttpRequest();
+      var data;
+
+      var GETteamData = function() {
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState == XMLHttpRequest.DONE) {
+            if (xhr.status == 200) {
+              // console.log(xhr.responseText);
+              data = JSON.parse(xhr.responseText);
+              createTeamsListHTML(data);
+
+            } else if (xhr.status == 400) {
+              console.log('There was an error 400');
+            } else {
+              console.log('something else other than 200 was returned');
+            }
+          }
+        }
+
+        xhr.open("GET", "https://statsapi.web.nhl.com/api/v1/teams", true);
+
+        xhr.send();
+      };
+      
+      var createTeamsListHTML = function(data) {
+        console.log(data)
+        var html = '';
+        for(var i = 0; i < data.teams.length; i++) {
+          console.log(data.teams[i].name);
+          html += `<li>${data.teams[i].name} - ${data.teams[i].division.name} - ${data.teams[i].venue.name}</li>`;
+        }
+        document.getElementById('teams').innerHTML = html;
+      }
+
+      GETteamData();
+    };
+
+    loadTeams();
+
+  </script>
 </body>
 </html>
