@@ -6,16 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>nhl project</title>
   <style>
-    #teams {
+    #teams, #scheduled-games {
       border: 1px solid;
       list-style-type: none;
       padding: 0;
     }
-    #teams li {
+    #teams li, #scheduled-games li {
       padding: 5px;
     }
 
-    #teams li:nth-child(odd) {
+    #teams li:nth-child(odd), #scheduled-games li:nth-child(odd) {
       background-color: #ececec;
     }
 
@@ -30,21 +30,27 @@
   <h1>The teams of the National Hockey League</h1>
   <section>
     <h2>Teams</h2>
-    <ul id="teams"></ul>
+    <!-- <ul id="teams"></ul> -->
+    <!-- START: scheduled games -->
+    <ul id="scheduled-games"></ul>
+    <!-- END: scheduled games -->
   </section>
   <script>
-    var loadTeams = function () {
+
+  /**
+   * GETdata is a generic function that preforms get requests at a specified endpoint, and returns data to a specified function.
+   * That function then does whatever it wants with the data returned
+   */
+    var GETdata = function(endpoint, func) {
       var xhr = new XMLHttpRequest();
       var data;
 
-      var GETteamData = function() {
-        xhr.onreadystatechange = function () {
+      xhr.onreadystatechange = function () {
           if (xhr.readyState == XMLHttpRequest.DONE) {
             if (xhr.status == 200) {
               // console.log(xhr.responseText);
               data = JSON.parse(xhr.responseText);
-              createTeamsListHTML(data);
-
+              func(data);
             } else if (xhr.status == 400) {
               console.log('There was an error 400');
             } else {
@@ -52,26 +58,52 @@
             }
           }
         }
-
-        xhr.open("GET", "https://statsapi.web.nhl.com/api/v1/teams", true);
-
+        xhr.open("GET", endpoint, true);
         xhr.send();
-      };
-      
-      var createTeamsListHTML = function(data) {
-        console.log(data)
-        var html = '';
-        for(var i = 0; i < data.teams.length; i++) {
-          console.log(data.teams[i].name);
-          html += `<li>${data.teams[i].name} - ${data.teams[i].division.name} - ${data.teams[i].venue.name}</li>`;
-        }
-        document.getElementById('teams').innerHTML = html;
-      }
-
-      GETteamData();
     };
 
-    loadTeams();
+    // var loadTeams = function () {
+    //   var createTeamsListHTML = function(data) {
+    //     console.log(data)
+    //     var html = '';
+    //     for(var i = 0; i < data.teams.length; i++) {
+    //       console.log(data.teams[i].name);
+    //       html += `<li>${data.teams[i].name} - ${data.teams[i].division.name} - ${data.teams[i].venue.name}</li>`;
+    //     }
+    //     document.getElementById('teams').innerHTML = html;
+    //   }
+
+    //   var getRequest = function() {
+    //     GETdata('https://statsapi.web.nhl.com/api/v1/teams', createTeamsListHTML)
+    //   };
+
+    //   getRequest();
+    // };
+
+
+    /**
+     *  loadSchedule loads the current days scheduled games
+     */
+     var loadSchedule = function() {
+      var createScheduledGamesHTML = function(data) {
+        var games = data.dates[0].games;
+        var html = '';
+        for(var i = 0; i < games.length; i++) {
+          var awayTeam = games[i].teams.away;
+          var homeTeam = games[i].teams.home;
+          html += `<li>${awayTeam.team.name} - ${awayTeam.score} - ${homeTeam.team.name} - ${homeTeam.score}</li>`;
+        }
+        document.getElementById('scheduled-games').innerHTML = html;
+      };
+
+      var getRequest = function() {
+        GETdata('https://statsapi.web.nhl.com/api/v1/schedule', createScheduledGamesHTML)
+      };
+      getRequest();
+    };
+
+    // loadTeams();
+    loadSchedule();
 
   </script>
 </body>
